@@ -11,6 +11,7 @@ import hashlib
 
 CHECKOUT_PATH = re.compile('^/ledger-api')
 PROCESS_PAYMENT =  re.compile('^/ledger-api/process-payment')
+TOKEN_CHECKOUT_PATH = re.compile('^/ledger-api/create-token-session')
 
 class BookingTimerMiddleware(object):
 
@@ -38,7 +39,7 @@ class BookingTimerMiddleware(object):
                          return response          
 
         else:
-               if request.path.startswith("/ledger-api/process-payment"):
+               if request.path.startswith("/ledger-api/process-payment") and not request.path.startswith("/ledger-api/process-payment-hpp"):
                     # booking as expired or session been removed
                     url_redirect = reverse('public_make_booking')
                     response = HttpResponse("<script> window.location='"+url_redirect+"';</script> <center><div class='container'><div class='alert alert-primary' role='alert'><a href='"+url_redirect+"'> Redirecting please wait: "+url_redirect+"</a><div></div></center>")
@@ -94,7 +95,7 @@ class BookingTimerMiddleware(object):
                     booking.expiry_time = max(booking.expiry_time, timezone.now()+datetime.timedelta(minutes=2))
                     booking.save()
             else:
-                 if request.path.startswith("/ledger-api/process-payment"):
+                 if request.path.startswith("/ledger-api/process-payment") and not request.path.startswith("/ledger-api/process-payment-hpp"):
                     # booking as expired or session been removed
                     url_redirect = reverse('public_make_booking')
                     response = HttpResponse("<script> window.location='"+url_redirect+"';</script> <center><div class='container'><div class='alert alert-primary' role='alert'><a href='"+url_redirect+"'> Redirecting please wait: "+url_redirect+"</a><div></div></center>")
@@ -102,7 +103,7 @@ class BookingTimerMiddleware(object):
 
             # force a redirect if in the checkout
             if ('ps_booking_internal' not in request.COOKIES) and CHECKOUT_PATH.match(request.path):
-                if ('ps_booking' not in request.session) and CHECKOUT_PATH.match(request.path):
+                if ('ps_booking' not in request.session) and CHECKOUT_PATH.match(request.path) and ('payment_session' not in request.session) and not TOKEN_CHECKOUT_PATH.match(request.path):
                     url_redirect = reverse('public_make_booking')
                     response = HttpResponse("<script> window.location='"+url_redirect+"';</script> <center><div class='container'><div class='alert alert-primary' role='alert'><a href='"+url_redirect+"'> Redirecting please wait: "+url_redirect+"</a><div></div></center>")
                     return response
