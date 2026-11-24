@@ -49,6 +49,7 @@ class DistrictSerializer(serializers.ModelSerializer):
 class PromoAreaSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = PromoArea
+        fields = '__all__'
 
 
 class CampgroundCampsiteFilterSerializer(serializers.Serializer):
